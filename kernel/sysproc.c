@@ -81,6 +81,16 @@ int
 sys_pgaccess(void)
 {
   // lab pgtbl: your code here.
+  uint64 base_addr;
+  int len;
+  uint64 p_mask;
+  if (argaddr(0, &base_addr) < 0 || argint(1, &len) < 0 || argaddr(2, &p_mask) < 0)
+    return -1;
+  struct proc *p = myproc();
+  unsigned int abits = 0;
+  do_pgaccess(p->pagetable, base_addr, len, &abits);
+  copyout(p->pagetable, p_mask, (char *)&abits, sizeof(abits));
+
   return 0;
 }
 #endif

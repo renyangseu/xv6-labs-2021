@@ -466,3 +466,32 @@ void vmprint(pagetable_t pagetable)
 
   _vmprint(pagetable, 1);
 }
+
+#define MAX_SCAN_PAGES 32    // 允许检查的最大页面数
+void do_pgaccess(pagetable_t pagetable, uint64 va, int len, unsigned int *abits)
+{
+  vmprint(pagetable);
+
+  pte_t *pte;
+
+  if (va >= MAXVA)
+    return;
+
+  len = len < MAX_SCAN_PAGES ? len : MAX_SCAN_PAGES;
+
+  for (int i = 0; i < len; i++)
+  {
+    uint64 cur_va = va + (i * PGSIZE);
+    if (cur_va >= MAXVA)
+      return;
+
+    pte = walk(pagetable, cur_va, 0);
+    if (pte == 0)
+      continue;
+    if ((*pte & PTE_A) != 0)
+    {
+      *pte &= ~PTE_A;
+      *abits |= (1L << i);
+    }
+  }
+}
